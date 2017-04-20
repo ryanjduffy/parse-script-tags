@@ -1,0 +1,29 @@
+{
+  "name": "extract-script-tags",
+  "version": "0.1.0",
+  "description": "Extracts the contents of each inline <script> tag in a source string",
+  "main": "index.js",
+  "scripts": {
+    "build": "babel index.js -d dist && cp package.json dist/package.json",
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ryanjduffy/extract-script-tags.git"
+  },
+  "author": "Ryan Duffy",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ryanjduffy/extract-script-tags/issues"
+  },
+  "homepage": "https://github.com/ryanjduffy/extract-script-tags#readme",
+  "devDependencies": {
+    "babel-cli": "^6.24.1",
+    "babel-preset-env": "^1.4.0",
+    "expect.js": "^0.3.1",
+    "jest": "^19.0.2"
+  },
+  "dependencies": {
+    "babylon": "^6.17.0"
+  }
+}
