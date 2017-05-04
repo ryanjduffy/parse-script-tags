@@ -58,15 +58,22 @@ function generateWhitespace(length) {
   return Array.from(new Array(length + 1)).join(" ");
 }
 
-function adjustForLineAndColumn(fullSource, location) {
-  const { index } = location;
-  const lines = fullSource
+function calcLineAndColumn(source, index) {
+  const lines = source
     .substring(0, index)
     .replace(/\r\l?/, "\n")
     .split(/\n/);
   const line = lines.length;
   const column = lines.pop().length + 1;
 
+  return {
+    column,
+    line
+  };
+}
+
+function adjustForLineAndColumn(fullSource, location) {
+  const {column, line} = calcLineAndColumn(fullSource, location.index);
   return Object.assign({}, location, {
     line,
     column,
@@ -99,6 +106,17 @@ function parseScriptTags(source, parser) {
     scripts.comments,
     scripts.tokens
   );
+
+  const end = calcLineAndColumn(source, source.length);
+  file.start = program.start = 0;
+  file.end = program.end = source.length;
+  file.loc = program.loc = {
+    start: {
+      line: 1,
+      column: 0
+    },
+    end
+  }
 
   return file;
 }

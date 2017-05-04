@@ -257,5 +257,20 @@ function def () {
       const scripts = parseScriptTags(SOURCES.htmlScriptTagsInComments);
       expect(scripts.tokens.length).to.not.eql(0);
     });
+
+    it("should return start and end locations", () => {
+      const source = SOURCES.htmlScriptTagsInComments;
+      const scripts = parseScriptTags(source);
+      expect(scripts.start).to.eql(0);
+      expect(scripts.end).to.eql(source.length);
+      expect(scripts.loc.start).to.eql({
+        line: 1,
+        column: 0
+      });
+      expect(scripts.loc.end).to.eql({
+        line: 11,
+        column: 5
+      });
+    })
   });
 });
