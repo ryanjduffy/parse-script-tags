@@ -87,7 +87,7 @@ function parseScriptTags(source, parser) {
     getCandidateScriptLocations(source),
     parser
   ).filter(
-    s => s !== null
+    types.isFile
   ).reduce((main, script) => {
     return {
       statements: main.statements.concat(script.program.body),
@@ -134,7 +134,7 @@ function extractScriptTags(source) {
       return null;
     }
   ).filter(
-    s => s !== null
+    types.isFile
   );
 }
 
