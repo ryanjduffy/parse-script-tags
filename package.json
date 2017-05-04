@@ -1,7 +1,7 @@
 {
   "name": "parse-script-tags",
   "version": "0.1.0",
-  "description": "Extracts the contents of each inline <script> tag in a source string",
+  "description": "Parses the contents of each inline <script> tag to produce a single AST",
   "main": "index.js",
   "scripts": {
     "build": "babel index.js -d dist && cp package.json dist/package.json",
