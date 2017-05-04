@@ -1,5 +1,5 @@
 {
-  "name": "extract-script-tags",
+  "name": "parse-script-tags",
   "version": "0.1.0",
   "description": "Extracts the contents of each inline <script> tag in a source string",
   "main": "index.js",
@@ -9,14 +9,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ryanjduffy/extract-script-tags.git"
+    "url": "git+https://github.com/ryanjduffy/parse-script-tags.git"
   },
   "author": "Ryan Duffy",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/ryanjduffy/extract-script-tags/issues"
+    "url": "https://github.com/ryanjduffy/parse-script-tags/issues"
   },
-  "homepage": "https://github.com/ryanjduffy/extract-script-tags#readme",
+  "homepage": "https://github.com/ryanjduffy/parse-script-tags#readme",
   "devDependencies": {
     "babel-cli": "^6.24.1",
     "babel-preset-env": "^1.4.0",

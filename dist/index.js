@@ -115,7 +115,7 @@ function extractScriptTags(source) {
   });
 }
 
-exports.default = extractScriptTags;
+exports.default = parseScriptTags;
 exports.extractScriptTags = extractScriptTags;
 exports.generateWhitespace = generateWhitespace;
 exports.getCandidateScriptLocations = getCandidateScriptLocations;

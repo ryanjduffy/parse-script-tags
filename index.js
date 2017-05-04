@@ -120,7 +120,7 @@ function extractScriptTags(source) {
   );
 }
 
-export default extractScriptTags;
+export default parseScriptTags;
 export {
   extractScriptTags,
   generateWhitespace,
