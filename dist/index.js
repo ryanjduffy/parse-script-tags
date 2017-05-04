@@ -65,12 +65,21 @@ function generateWhitespace(length) {
   return Array.from(new Array(length + 1)).join(" ");
 }
 
-function adjustForLineAndColumn(fullSource, location) {
-  var index = location.index;
-
-  var lines = fullSource.substring(0, index).replace(/\r\l?/, "\n").split(/\n/);
+function calcLineAndColumn(source, index) {
+  var lines = source.substring(0, index).replace(/\r\l?/, "\n").split(/\n/);
   var line = lines.length;
   var column = lines.pop().length + 1;
+
+  return {
+    column: column,
+    line: line
+  };
+}
+
+function adjustForLineAndColumn(fullSource, location) {
+  var _calcLineAndColumn = calcLineAndColumn(fullSource, location.index),
+      column = _calcLineAndColumn.column,
+      line = _calcLineAndColumn.line;
 
   return Object.assign({}, location, {
     line: line,
@@ -81,9 +90,7 @@ function adjustForLineAndColumn(fullSource, location) {
 }
 
 function parseScriptTags(source, parser) {
-  var scripts = parseScripts(getCandidateScriptLocations(source), parser).filter(function (s) {
-    return s !== null;
-  }).reduce(function (main, script) {
+  var scripts = parseScripts(getCandidateScriptLocations(source), parser).filter(types.isFile).reduce(function (main, script) {
     return {
       statements: main.statements.concat(script.program.body),
       comments: main.comments.concat(script.comments),
@@ -98,6 +105,17 @@ function parseScriptTags(source, parser) {
   var program = types.program(scripts.statements);
   var file = types.file(program, scripts.comments, scripts.tokens);
 
+  var end = calcLineAndColumn(source, source.length);
+  file.start = program.start = 0;
+  file.end = program.end = source.length;
+  file.loc = program.loc = {
+    start: {
+      line: 1,
+      column: 0
+    },
+    end: end
+  };
+
   return file;
 }
 
@@ -110,9 +128,7 @@ function extractScriptTags(source) {
     }
 
     return null;
-  }).filter(function (s) {
-    return s !== null;
-  });
+  }).filter(types.isFile);
 }
 
 exports.default = parseScriptTags;
