@@ -4,7 +4,6 @@ const expect = require("expect.js");
 import {
   generateWhitespace,
   getCandidateScriptLocations,
-  parseScript,
   parseScripts,
   parseScriptTags
 } from "../";
@@ -250,13 +249,13 @@ function def () {
   });
 
   describe("#parseScriptTags", () => {
-    it("should return no ASTs for empty scripts", () => {
-      expect(parseScriptTags(SOURCES.htmlEmpty).length).to.eql(0);
+    it("should return an empty AST for empty scripts", () => {
+      expect(parseScriptTags(SOURCES.htmlEmpty).tokens.length).to.eql(0);
     });
 
-    it("should only return ASTs for valid scripts", () => {
+    it("should return a non-empty AST for valid scripts", () => {
       const scripts = parseScriptTags(SOURCES.htmlScriptTagsInComments);
-      expect(scripts.length).to.eql(1);
+      expect(scripts.tokens.length).to.not.eql(0);
     });
   });
 });

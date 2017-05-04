@@ -1,4 +1,5 @@
-const babylon = require('babylon');
+const babylon = require("babylon");
+const types = require("babel-types");
 
 const startScript = /<script[^>]*>/im;
 const endScript = /<\/script\s*>/im;
@@ -33,10 +34,16 @@ function getCandidateScriptLocations(source, index) {
   return [];
 }
 
-function parseScript(source) {
+function parseScript({source, line}) {
+  // remove empty or only whitespace scripts
+  if (source.length === 0 || /^\s+$/.test(source)) {
+    return null;
+  }
+
   try {
     return babylon.parse(source, {
-      sourceType: "script"
+      sourceType: "script",
+      startLine: line
     });
   } catch (e) {
     return null;
@@ -44,14 +51,7 @@ function parseScript(source) {
 }
 
 function parseScripts(locations, parser = parseScript) {
-  return locations.map(loc => {
-    // remove empty or only whitespace scripts
-    if (loc.source.length === 0 || /^\s+$/.test(loc.source)) {
-      return null;
-    }
-
-    return parser(loc.source);
-  });
+  return locations.map(parser);
 }
 
 function generateWhitespace(length) {
@@ -60,7 +60,10 @@ function generateWhitespace(length) {
 
 function adjustForLineAndColumn(fullSource, location) {
   const { index } = location;
-  const lines = fullSource.substring(0, index).split(/\n/);
+  const lines = fullSource
+    .substring(0, index)
+    .replace(/\r\l?/, "\n")
+    .split(/\n/);
   const line = lines.length;
   const column = lines.pop().length + 1;
 
@@ -78,14 +81,48 @@ function parseScriptTags(source, parser) {
     parser
   ).filter(
     s => s !== null
+  ).reduce((main, script) => {
+    return {
+      statements: main.statements.concat(script.program.body),
+      comments: main.comments.concat(script.comments),
+      tokens: main.tokens.concat(script.tokens)
+    };
+  }, {
+    statements: [],
+    comments: [],
+    tokens: []
+  });
+
+  const program = types.program(scripts.statements);
+  const file = types.file(
+    program,
+    scripts.comments,
+    scripts.tokens
   );
 
-  return scripts;
+  return file;
 }
 
-export default parseScriptTags;
+function extractScriptTags(source) {
+  return parseScripts(
+    getCandidateScriptLocations(source),
+    loc => {
+      const ast = parseScript(loc);
+
+      if (ast) {
+        return loc;
+      }
+
+      return null;
+    }
+  ).filter(
+    s => s !== null
+  );
+}
+
+export default extractScriptTags;
 export {
-  parseScriptTags as extractScriptTags,
+  extractScriptTags,
   generateWhitespace,
   getCandidateScriptLocations,
   parseScript,

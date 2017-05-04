@@ -6,7 +6,8 @@ Object.defineProperty(exports, "__esModule", {
 
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
-var babylon = require('babylon');
+var babylon = require("babylon");
+var types = require("babel-types");
 
 var startScript = /<script[^>]*>/im;
 var endScript = /<\/script\s*>/im;
@@ -35,10 +36,19 @@ function getCandidateScriptLocations(source, index) {
   return [];
 }
 
-function parseScript(source) {
+function parseScript(_ref) {
+  var source = _ref.source,
+      line = _ref.line;
+
+  // remove empty or only whitespace scripts
+  if (source.length === 0 || /^\s+$/.test(source)) {
+    return null;
+  }
+
   try {
     return babylon.parse(source, {
-      sourceType: "script"
+      sourceType: "script",
+      startLine: line
     });
   } catch (e) {
     return null;
@@ -48,14 +58,7 @@ function parseScript(source) {
 function parseScripts(locations) {
   var parser = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : parseScript;
 
-  return locations.map(function (loc) {
-    // remove empty or only whitespace scripts
-    if (loc.source.length === 0 || /^\s+$/.test(loc.source)) {
-      return null;
-    }
-
-    return parser(loc.source);
-  });
+  return locations.map(parser);
 }
 
 function generateWhitespace(length) {
@@ -65,7 +68,7 @@ function generateWhitespace(length) {
 function adjustForLineAndColumn(fullSource, location) {
   var index = location.index;
 
-  var lines = fullSource.substring(0, index).split(/\n/);
+  var lines = fullSource.substring(0, index).replace(/\r\l?/, "\n").split(/\n/);
   var line = lines.length;
   var column = lines.pop().length + 1;
 
@@ -80,13 +83,40 @@ function adjustForLineAndColumn(fullSource, location) {
 function parseScriptTags(source, parser) {
   var scripts = parseScripts(getCandidateScriptLocations(source), parser).filter(function (s) {
     return s !== null;
+  }).reduce(function (main, script) {
+    return {
+      statements: main.statements.concat(script.program.body),
+      comments: main.comments.concat(script.comments),
+      tokens: main.tokens.concat(script.tokens)
+    };
+  }, {
+    statements: [],
+    comments: [],
+    tokens: []
   });
 
-  return scripts;
+  var program = types.program(scripts.statements);
+  var file = types.file(program, scripts.comments, scripts.tokens);
+
+  return file;
 }
 
-exports.default = parseScriptTags;
-exports.extractScriptTags = parseScriptTags;
+function extractScriptTags(source) {
+  return parseScripts(getCandidateScriptLocations(source), function (loc) {
+    var ast = parseScript(loc);
+
+    if (ast) {
+      return loc;
+    }
+
+    return null;
+  }).filter(function (s) {
+    return s !== null;
+  });
+}
+
+exports.default = extractScriptTags;
+exports.extractScriptTags = extractScriptTags;
 exports.generateWhitespace = generateWhitespace;
 exports.getCandidateScriptLocations = getCandidateScriptLocations;
 exports.parseScript = parseScript;
