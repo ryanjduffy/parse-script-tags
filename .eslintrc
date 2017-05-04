@@ -1,11 +1,7 @@
 {
   "parser": "babel-eslint",
   "plugins": [
-    "react",
-    "mozilla",
-    "flowtype",
-    "babel",
-    "prettier"
+    "babel"
   ],
   "globals": {
     "atob": true,
@@ -32,11 +28,6 @@
     "global": true,
     "L10N": true
   },
-  "extends": [
-    "prettier",
-    "prettier/flowtype",
-    "prettier/react"
-  ],
   "parserOptions": {
     "ecmaVersion": 2016,
     "sourceType": "module",
@@ -58,22 +49,6 @@
     // See bug 1224289.
     "mozilla/reject-importGlobalProperties": 1,
     "mozilla/var-only-at-top-level": 1,
-
-    // Rules from the React plugin
-    "react/display-name": [2, { "ignoreTranspilerName": true }],
-    "react/no-danger": 1,
-    "react/no-did-mount-set-state": 1,
-    "react/no-did-update-set-state": 1,
-    "react/no-direct-mutation-state": 1,
-    "react/no-unknown-property": 1,
-    "react/prop-types": 1,
-    "react/sort-comp": [1, {
-      order: [
-        "propTypes",
-        "everything-else",
-        "render"
-      ]
-    }],
 
     // Enforce the spacing around the * in generator functions.
     "babel/generator-star-spacing":  [2, "after"],
