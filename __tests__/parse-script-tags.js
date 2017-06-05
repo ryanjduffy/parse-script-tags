@@ -221,7 +221,7 @@ function def () {
   describe("#parseScripts", () => {
     it("should not parse empty scripts", () => {
       const expected = [null, null];
-      const actual = parseScripts([{ source: "" }, { source: "\n\t " }]);
+      const actual = parseScripts([{ source: "" }, { source: "\n\t " }], parseScript);
 
       expect(actual).to.eql(expected);
     });
@@ -232,7 +232,7 @@ function def () {
         { source: "<p>Invalid</p>" },
         { source: "<script><script>" },
         { source: "<!-- \n multiline\nHTML comment\nwith <tags />\n-->" }
-      ]);
+      ], parseScript);
 
       expect(actual).to.eql(expected);
     });
@@ -250,17 +250,17 @@ function def () {
 
   describe("#parseScriptTags", () => {
     it("should return an empty AST for empty scripts", () => {
-      expect(parseScriptTags(SOURCES.htmlEmpty).tokens.length).to.eql(0);
+      expect(parseScriptTags(SOURCES.htmlEmpty, parseScript).tokens.length).to.eql(0);
     });
 
     it("should return a non-empty AST for valid scripts", () => {
-      const scripts = parseScriptTags(SOURCES.htmlScriptTagsInComments);
+      const scripts = parseScriptTags(SOURCES.htmlScriptTagsInComments, parseScript);
       expect(scripts.tokens.length).to.not.eql(0);
     });
 
     it("should return start and end locations", () => {
       const source = SOURCES.htmlScriptTagsInComments;
-      const scripts = parseScriptTags(source);
+      const scripts = parseScriptTags(source, parseScript);
       expect(scripts.start).to.eql(0);
       expect(scripts.end).to.eql(source.length);
       expect(scripts.loc.start).to.eql({
@@ -274,3 +274,20 @@ function def () {
     })
   });
 });
+
+
+function parseScript({ source, line }) {
+  // remove empty or only whitespace scripts
+  if (source.length === 0 || /^\s+$/.test(source)) {
+    return null;
+  }
+
+  try {
+    return babylon.parse(source, {
+      sourceType: "script",
+      startLine: line
+    });
+  } catch (e) {
+    return null;
+  }
+}
