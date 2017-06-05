@@ -34,7 +34,7 @@ function getCandidateScriptLocations(source, index) {
   return [];
 }
 
-function parseScript({source, line}) {
+function parseScript({ source, line }) {
   // remove empty or only whitespace scripts
   if (source.length === 0 || /^\s+$/.test(source)) {
     return null;
@@ -50,7 +50,8 @@ function parseScript({source, line}) {
   }
 }
 
-function parseScripts(locations, parser = parseScript) {
+function parseScripts(locations, parser) {
+  parser = parser || (() => null);
   return locations.map(parser);
 }
 
@@ -59,10 +60,7 @@ function generateWhitespace(length) {
 }
 
 function calcLineAndColumn(source, index) {
-  const lines = source
-    .substring(0, index)
-    .replace(/\r\l?/, "\n")
-    .split(/\n/);
+  const lines = source.substring(0, index).replace(/\r\l?/, "\n").split(/\n/);
   const line = lines.length;
   const column = lines.pop().length + 1;
 
@@ -73,7 +71,7 @@ function calcLineAndColumn(source, index) {
 }
 
 function adjustForLineAndColumn(fullSource, location) {
-  const {column, line} = calcLineAndColumn(fullSource, location.index);
+  const { column, line } = calcLineAndColumn(fullSource, location.index);
   return Object.assign({}, location, {
     line,
     column,
@@ -83,29 +81,25 @@ function adjustForLineAndColumn(fullSource, location) {
 }
 
 function parseScriptTags(source, parser) {
-  const scripts = parseScripts(
-    getCandidateScriptLocations(source),
-    parser
-  ).filter(
-    types.isFile
-  ).reduce((main, script) => {
-    return {
-      statements: main.statements.concat(script.program.body),
-      comments: main.comments.concat(script.comments),
-      tokens: main.tokens.concat(script.tokens)
-    };
-  }, {
-    statements: [],
-    comments: [],
-    tokens: []
-  });
+  const scripts = parseScripts(getCandidateScriptLocations(source), parser)
+    .filter(types.isFile)
+    .reduce(
+      (main, script) => {
+        return {
+          statements: main.statements.concat(script.program.body),
+          comments: main.comments.concat(script.comments),
+          tokens: main.tokens.concat(script.tokens)
+        };
+      },
+      {
+        statements: [],
+        comments: [],
+        tokens: []
+      }
+    );
 
   const program = types.program(scripts.statements);
-  const file = types.file(
-    program,
-    scripts.comments,
-    scripts.tokens
-  );
+  const file = types.file(program, scripts.comments, scripts.tokens);
 
   const end = calcLineAndColumn(source, source.length);
   file.start = program.start = 0;
@@ -116,26 +110,21 @@ function parseScriptTags(source, parser) {
       column: 0
     },
     end
-  }
+  };
 
   return file;
 }
 
 function extractScriptTags(source) {
-  return parseScripts(
-    getCandidateScriptLocations(source),
-    loc => {
-      const ast = parseScript(loc);
+  return parseScripts(getCandidateScriptLocations(source), loc => {
+    const ast = parseScript(loc);
 
-      if (ast) {
-        return loc;
-      }
-
-      return null;
+    if (ast) {
+      return loc;
     }
-  ).filter(
-    types.isFile
-  );
+
+    return null;
+  }).filter(types.isFile);
 }
 
 export default parseScriptTags;
