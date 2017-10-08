@@ -3,6 +3,8 @@ const types = require("babel-types");
 
 const startScript = /<script[^>]*>/im;
 const endScript = /<\/script\s*>/im;
+// https://stackoverflow.com/questions/5034781/js-regex-to-split-by-line#comment5633979_5035005
+const newLines = /\r\n|[\n\v\f\r\x85\u2028\u2029]/;
 
 function getCandidateScriptLocations(source, index) {
   const i = index || 0;
@@ -61,8 +63,7 @@ function generateWhitespace(length) {
 function calcLineAndColumn(source, index) {
   const lines = source
     .substring(0, index)
-    .replace(/\r\l?/, "\n")
-    .split(/\n/);
+    .split(newLines)
   const line = lines.length;
   const column = lines.pop().length + 1;
 
