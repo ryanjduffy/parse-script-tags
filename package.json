@@ -1,6 +1,6 @@
 {
   "name": "parse-script-tags",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Parses the contents of each inline <script> tag to produce a single AST",
   "main": "index.js",
   "config": {
