@@ -81,6 +81,11 @@ function def () {
 <script>
 This is not real script content;
 </script>
+    `,
+  /* eslint-disable max-len */
+  htmlScriptTagsWithInvalidType:
+    `
+<script type="application/ld+json">{"@context":"http:\/\/schema.org","@type":"Person","url":"https:\/\/davidwalsh.name\/","sameAs":["https:\/\/www.facebook.com\/davidwalshblog","https:\/\/plus.google.com\/114538814489633467974?rel=author","https:\/\/twitter.com\/davidwalshblog"],"@id":"#person","name":"David Walsh"}</script>
     `
   /* eslint-enable max-len */
 };
@@ -215,6 +220,10 @@ function def () {
 `
         }
       ]);
+
+      expect(
+        getCandidateScriptLocations(SOURCES.htmlScriptTagsWithInvalidType)
+      ).to.have.length(0);
     });
   });
 
@@ -271,6 +280,6 @@ function def () {
         line: 11,
         column: 5
       });
-    })
+    });
   });
 });

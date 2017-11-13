@@ -1,10 +1,32 @@
 const babylon = require("babylon");
+const parse5 = require("parse5");
 const types = require("babel-types");
 
 const startScript = /<script[^>]*>/im;
 const endScript = /<\/script\s*>/im;
 // https://stackoverflow.com/questions/5034781/js-regex-to-split-by-line#comment5633979_5035005
 const newLines = /\r\n|[\n\v\f\r\x85\u2028\u2029]/;
+
+function getType (tag) {
+  const fragment = parse5.parseFragment(tag);
+
+  if (fragment) {
+    const script = fragment.childNodes
+      .filter(node => node.tagName === "script")
+      .pop();
+
+    if (script) {
+      const type = script.attrs
+        .filter(attr => attr.name === "type")
+        .map(attr => attr.value)
+        .pop();
+
+      return type ? type.toLowerCase() : null;
+    }
+  }
+
+  return null;
+}
 
 function getCandidateScriptLocations(source, index) {
   const i = index || 0;
@@ -18,6 +40,15 @@ function getCandidateScriptLocations(source, index) {
     if (endMatch) {
       const locLength = endMatch.index;
       const locIndex = i + startsAt;
+      const endIndex = locIndex + locLength + endMatch[0].length;
+
+      // extract the complete tag (incl start and end tags and content). if the
+      // type is invalid (= not JS), skip this tag and continue
+      const tag = source.substring(i + startMatch.index, endIndex);
+      const type = getType(tag);
+      if (type && (type !== "javascript" && type !== "text/javascript")) {
+        return getCandidateScriptLocations(source, endIndex);
+      }
 
       return [
         adjustForLineAndColumn(source, {
@@ -25,10 +56,7 @@ function getCandidateScriptLocations(source, index) {
           length: locLength,
           source: source.substring(locIndex, locIndex + locLength)
         }),
-        ...getCandidateScriptLocations(
-          source,
-          locIndex + locLength + endMatch[0].length
-        )
+        ...getCandidateScriptLocations(source, endIndex)
       ];
     }
   }

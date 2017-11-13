@@ -7,7 +7,9 @@
     "outdir": "dist"
   },
   "jest": {
-    "modulePathIgnorePatterns": ["/dist/"]
+    "modulePathIgnorePatterns": [
+      "/dist/"
+    ]
   },
   "scripts": {
     "build:babel": "babel index.js -d $npm_package_config_outdir",
@@ -36,6 +38,7 @@
   },
   "dependencies": {
     "babel-types": "^6.24.1",
-    "babylon": "^6.17.0"
+    "babylon": "^6.17.0",
+    "parse5": "^3.0.3"
   }
 }
