@@ -7,12 +7,35 @@ Object.defineProperty(exports, "__esModule", {
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
 var babylon = require("babylon");
+var parse5 = require("parse5");
 var types = require("babel-types");
 
 var startScript = /<script[^>]*>/im;
 var endScript = /<\/script\s*>/im;
 // https://stackoverflow.com/questions/5034781/js-regex-to-split-by-line#comment5633979_5035005
 var newLines = /\r\n|[\n\v\f\r\x85\u2028\u2029]/;
+
+function getType(tag) {
+  var fragment = parse5.parseFragment(tag);
+
+  if (fragment) {
+    var script = fragment.childNodes.filter(function (node) {
+      return node.tagName === "script";
+    }).pop();
+
+    if (script) {
+      var type = script.attrs.filter(function (attr) {
+        return attr.name === "type";
+      }).map(function (attr) {
+        return attr.value;
+      }).pop();
+
+      return type ? type.toLowerCase() : null;
+    }
+  }
+
+  return null;
+}
 
 function getCandidateScriptLocations(source, index) {
   var i = index || 0;
@@ -26,12 +49,21 @@ function getCandidateScriptLocations(source, index) {
     if (endMatch) {
       var locLength = endMatch.index;
       var locIndex = i + startsAt;
+      var endIndex = locIndex + locLength + endMatch[0].length;
+
+      // extract the complete tag (incl start and end tags and content). if the
+      // type is invalid (= not JS), skip this tag and continue
+      var tag = source.substring(i + startMatch.index, endIndex);
+      var type = getType(tag);
+      if (type && type !== "javascript" && type !== "text/javascript") {
+        return getCandidateScriptLocations(source, endIndex);
+      }
 
       return [adjustForLineAndColumn(source, {
         index: locIndex,
         length: locLength,
         source: source.substring(locIndex, locIndex + locLength)
-      })].concat(_toConsumableArray(getCandidateScriptLocations(source, locIndex + locLength + endMatch[0].length)));
+      })].concat(_toConsumableArray(getCandidateScriptLocations(source, endIndex)));
     }
   }
 
