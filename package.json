@@ -1,14 +1,15 @@
 {
   "name": "parse-script-tags",
   "version": "0.1.4",
-  "description":
-    "Parses the contents of each inline <script> tag to produce a single AST",
+  "description": "Parses the contents of each inline <script> tag to produce a single AST",
   "main": "index.js",
   "config": {
     "outdir": "dist"
   },
   "jest": {
-    "modulePathIgnorePatterns": ["/dist/"]
+    "modulePathIgnorePatterns": [
+      "/dist/"
+    ]
   },
   "scripts": {
     "build:babel": "babel *.js -d $npm_package_config_outdir",
@@ -36,7 +37,7 @@
     "jest": "^19.0.2"
   },
   "dependencies": {
-    "@babel/types": "^7.0.0-beta.39",
+    "@babel/types": "^7.11.5",
     "babylon": "^7.0.0-beta.39"
   }
 }
